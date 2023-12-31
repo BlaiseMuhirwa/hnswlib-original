@@ -347,6 +347,10 @@ class Index {
         return ids;
     }
 
+    std::vector<std::vector<uint32_t>> getGraph() {
+        return appr_alg->getGraph();
+    }
+
 
     py::dict getAnnData() const { /* WARNING: Index::getAnnData is not thread-safe with Index::addItems */
         std::unique_lock <std::mutex> templock(appr_alg->global);
@@ -934,6 +938,7 @@ PYBIND11_PLUGIN(hnswlib) {
             py::arg("ids") = py::none(),
             py::arg("num_threads") = -1,
             py::arg("replace_deleted") = false)
+        .def("get_graph", &Index<float>::getGraph)
         .def("get_items", &Index<float>::getData, py::arg("ids") = py::none(), py::arg("return_type") = "numpy")
         .def("get_ids_list", &Index<float>::getIdsList)
         .def("set_ef", &Index<float>::set_ef, py::arg("ef"))
