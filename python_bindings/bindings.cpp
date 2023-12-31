@@ -354,7 +354,7 @@ public:
 
     std::vector<std::vector<uint32_t>> graph = appr_alg->getGraph();
     // This will be doubled in the base layer.
-    auto num_edges = appr_alg->M_;
+    auto num_edges = appr_alg->M_ * 2;
 
     output_file << "\%\%MatrixMarket matrix coordinate integer general"
                 << std::endl;
