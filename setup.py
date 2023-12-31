@@ -79,8 +79,8 @@ class BuildExt(build_ext):
         'unix': ['-O3', compiler_flag_native],  # , '-w'
     }
     link_opts = {
-        'unix': [],
-        'msvc': [],
+        'unix': ["-w"],
+        'msvc': ["-w"],
     }
 
     if os.environ.get("HNSWLIB_NO_NATIVE"):

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <atomic>
 #include <iostream>
+#include <fstream>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -358,10 +359,10 @@ public:
 
     output_file << "\%\%MatrixMarket matrix coordinate integer general"
                 << std::endl;
-    output_file << appr_alg.cur_element_count << " "
-                << appr_alg.cur_element_count << " " << num_edges << std::endl;
+    output_file << appr_alg->cur_element_count << " "
+                << appr_alg->cur_element_count << " " << num_edges << std::endl;
 
-    for (int i = 0; i < appr_alg.cur_element_count; i++) {
+    for (int i = 0; i < appr_alg->cur_element_count; i++) {
       for (int j = 0; j < graph[i].size(); j++) {
         output_file << i + 1 << " " << graph[i][j] + 1 << std::endl;
       }
