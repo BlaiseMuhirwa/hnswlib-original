@@ -16,11 +16,13 @@ include_dirs = [
     np.get_include(),
 ]
 
+working_dir = os.getcwd()
+
 # compatibility when run in python_bindings
 bindings_dir = 'python_bindings'
 if bindings_dir in os.path.basename(os.getcwd()):
-    source_files = ['./bindings.cpp']
-    include_dirs.extend(['../hnswlib/'])
+    source_files = [os.path.join(working_dir, "bindings.cpp")]
+    include_dirs.extend([os.path.join(working_dir, "..", "hnswlib")])
 else:
     source_files = ['./python_bindings/bindings.cpp']
     include_dirs.extend(['./hnswlib/'])
