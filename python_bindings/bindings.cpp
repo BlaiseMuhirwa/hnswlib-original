@@ -353,7 +353,7 @@ public:
     std::ofstream output_file;
     output_file.open(filename);
 
-    std::vector<std::vector<uint32_t>> graph = appr_alg->getGraph();
+    std::vector<std::vector<size_t>> graph = appr_alg->getGraph();
     // This will be doubled in the base layer.
     auto num_edges = appr_alg->M_ * 2;
 
@@ -362,8 +362,8 @@ public:
     output_file << appr_alg->cur_element_count << " "
                 << appr_alg->cur_element_count << " " << num_edges << std::endl;
 
-    for (int i = 0; i < appr_alg->cur_element_count; i++) {
-      for (int j = 0; j < graph[i].size(); j++) {
+    for (size_t i = 0; i < appr_alg->cur_element_count; i++) {
+      for (size_t j = 0; j < graph[i].size(); j++) {
         output_file << i + 1 << " " << graph[i][j] + 1 << std::endl;
       }
     }

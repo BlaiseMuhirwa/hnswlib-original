@@ -701,10 +701,10 @@ public:
     max_elements_ = new_max_elements;
   }
 
-  std::vector<std::vector<uint32_t>> getGraph() {
+  std::vector<std::vector<labeltype>> getGraph() {
     // constructs an outdegree table for the graph by only using the connections
     // in the base layer (layer 0)
-    std::vector<std::vector<uint32_t>> graph(cur_element_count);
+    std::vector<std::vector<labeltype>> graph(cur_element_count);
     for (tableint node_internal_id = 0; node_internal_id < cur_element_count;
          node_internal_id++) {
       // Pointer to [size, link_0, link_1, ... link_size].
@@ -729,8 +729,7 @@ public:
         // 3. Convert it to an external id (typically, the row in the input CSV
         // file, fvecs, etc).
         labeltype link_external_label = getExternalLabel(link_internal_id);
-        // 4. Write the graph in terms of external links. Note that this casts
-        // labeltype to a uint32_t.
+        // 4. Write the graph in terms of external links.
         graph[node_internal_id].push_back(link_external_label);
       }
     }
