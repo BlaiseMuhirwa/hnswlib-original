@@ -11,6 +11,11 @@ from setuptools.command.build_ext import build_ext
 __version__ = '0.8.0'
 
 
+# Define HNSWLIB_NO_NATIVE to disable native optimizations
+# (e.g. if you are building on a different platform than you are running)
+os.environ["HNSWLIB_NO_NATIVE"] = "1"
+
+
 include_dirs = [
     pybind11.get_include(),
     np.get_include(),
