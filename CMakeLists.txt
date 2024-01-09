@@ -1,105 +1,114 @@
-cmake_minimum_required(VERSION 3.0...3.26)
-
-project(hnswlib
+cmake_minimum_required (VERSION 2.6)
+project(hnsw_lib
     LANGUAGES CXX)
 
-include(GNUInstallDirs)
-include(CheckCXXCompilerFlag)
-
 add_library(hnswlib INTERFACE)
-add_library(hnswlib::hnswlib ALIAS hnswlib)
+target_include_directories(hnswlib INTERFACE .) 
+include(ExternalProject)
 
-target_include_directories(hnswlib INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-# Install
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/hnswlib
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+function(functionInstallExternalCMakeProject ep_name)
+  ExternalProject_Get_Property(${ep_name} binary_dir)
+  install(SCRIPT ${binary_dir}/cmake_install.cmake)
+endfunction()
 
-install(TARGETS hnswlib
-    EXPORT hnswlibTargets)
+ExternalProject_Add(
+  ZLIB
+  DEPENDS ""
+  GIT_REPOSITORY https://github.com/madler/zlib.git
+  GIT_TAG v1.2.11
+  SOURCE_DIR ZLIB-source
+  BINARY_DIR ZLIB-build
+  UPDATE_COMMAND ""
+  PATCH_COMMAND ""
+  # INSTALL_COMMAND ""
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS
+    -DCMAKE_INSTALL_PREFIX:STRING=${PROJECT_BINARY_DIR}/ep
+    -DINSTALL_BIN_DIR:STRING=${PROJECT_BINARY_DIR}/ep/bin
+    -DINSTALL_INC_DIR:STRING=${PROJECT_BINARY_DIR}/ep/include
+    -DINSTALL_LIB_DIR:STRING=${PROJECT_BINARY_DIR}/ep/lib
+    -DINSTALL_MAN_DIR:STRING=${PROJECT_BINARY_DIR}/ep/share/man
+    -DINSTALL_PKGCONFIG_DIR:STRING=${PROJECT_BINARY_DIR}/ep/share/pkgconfig
+    -DCMAKE_BUILD_TYPE:STRING=Release)
+functioninstallexternalcmakeproject(ZLIB)
 
-install(EXPORT hnswlibTargets
-    FILE hnswlibConfig.cmake
-    NAMESPACE hnswlib::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hnswlib)
+set(ZLIB_LIB_DEBUG ${PROJECT_BINARY_DIR}/ep/lib/libz.a)
+set(ZLIB_LIB_RELEASE ${PROJECT_BINARY_DIR}/ep/lib/libz.a)
 
-# Examples and tests
+
+ExternalProject_Add(
+  CNPY
+  DEPENDS ZLIB
+  GIT_REPOSITORY https://github.com/sarthakpati/cnpy.git
+  # GIT_TAG v1.2.11
+  SOURCE_DIR CNPY-source
+  BINARY_DIR CNPY-build
+  UPDATE_COMMAND ""
+  PATCH_COMMAND ""
+  # INSTALL_COMMAND ""
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS -DZLIB_INCLUDE_DIR:STRING=${PROJECT_BINARY_DIR}/ep/include
+             -DZLIB_LIBRARY_DEBUG:STRING=${ZLIB_LIB_DEBUG}
+             -DZLIB_LIBRARY_RELEASE:STRING=${ZLIB_LIB_RELEASE}
+             -DCMAKE_INSTALL_PREFIX:STRING=${PROJECT_BINARY_DIR}/ep
+             -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+             -DCMAKE_BUILD_TYPE:STRING=Release)
+functioninstallexternalcmakeproject(CNPY)
+
+include_directories(${PROJECT_BINARY_DIR}/ep/include)
+
+set(CNPY_LIB ${PROJECT_BINARY_DIR}/ep/lib/libcnpy.a)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    option(HNSWLIB_EXAMPLES "Build examples and tests." ON)
-else()
-    option(HNSWLIB_EXAMPLES "Build examples and tests." OFF)
-endif()
-if(HNSWLIB_EXAMPLES)
     set(CMAKE_CXX_STANDARD 11)
 
-    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-      SET( CMAKE_CXX_FLAGS  "-Ofast -std=c++11 -DHAVE_CXX0X -openmp -fpic -ftree-vectorize" )
-      check_cxx_compiler_flag("-march=native" COMPILER_SUPPORT_NATIVE_FLAG)
-      if(COMPILER_SUPPORT_NATIVE_FLAG)
-        SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native" )
-        message("set -march=native flag")
-      else()
-        check_cxx_compiler_flag("-mcpu=apple-m1" COMPILER_SUPPORT_M1_FLAG)
-        if(COMPILER_SUPPORT_M1_FLAG)
-          SET( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcpu=apple-m1" )
-          message("set -mcpu=apple-m1 flag")
-        endif()
-      endif()
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      SET( CMAKE_CXX_FLAGS  "-Xclang -Ofast -DNDEBUG -std=c++11 -DHAVE_CXX0X -openmp -march=native -fpic -ftree-vectorize")
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-      SET( CMAKE_CXX_FLAGS  "-Ofast -lrt -std=c++11 -DHAVE_CXX0X -march=native -fpic -w -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=0" )
+      SET( CMAKE_CXX_FLAGS  "-Ofast -lrt -DNDEBUG -std=c++11 -DHAVE_CXX0X -march=native -fpic -w -fopenmp -ftree-vectorize -ftree-vectorizer-verbose=0" )
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-      SET( CMAKE_CXX_FLAGS  "/O2 -DHAVE_CXX0X /W1 /openmp /EHsc" )
+      SET( CMAKE_CXX_FLAGS  "-Ofast -lrt -DNDEBUG -std=c++11 -DHAVE_CXX0X -openmp -march=native -fpic -w -fopenmp -ftree-vectorize" )
     endif()
 
     # examples
-    add_executable(example_search examples/cpp/example_search.cpp)
-    target_link_libraries(example_search hnswlib)
+    # add_executable(example_search examples/cpp/example_search.cpp)
+    # target_link_libraries(example_search hnswlib)
 
-    add_executable(example_epsilon_search examples/cpp/example_epsilon_search.cpp)
-    target_link_libraries(example_epsilon_search hnswlib)
+    # add_executable(example_filter examples/cpp/example_filter.cpp)
+    # target_link_libraries(example_filter hnswlib)
 
-    add_executable(example_multivector_search examples/cpp/example_multivector_search.cpp)
-    target_link_libraries(example_multivector_search hnswlib)
+    # add_executable(example_replace_deleted examples/cpp/example_replace_deleted.cpp)
+    # target_link_libraries(example_replace_deleted hnswlib)
 
-    add_executable(example_filter examples/cpp/example_filter.cpp)
-    target_link_libraries(example_filter hnswlib)
+    # add_executable(example_mt_search examples/cpp/example_mt_search.cpp)
+    # target_link_libraries(example_mt_search hnswlib)
 
-    add_executable(example_replace_deleted examples/cpp/example_replace_deleted.cpp)
-    target_link_libraries(example_replace_deleted hnswlib)
+    # add_executable(example_mt_filter examples/cpp/example_mt_filter.cpp)
+    # target_link_libraries(example_mt_filter hnswlib)
 
-    add_executable(example_mt_search examples/cpp/example_mt_search.cpp)
-    target_link_libraries(example_mt_search hnswlib)
+    # add_executable(example_mt_replace_deleted examples/cpp/example_mt_replace_deleted.cpp)
+    # target_link_libraries(example_mt_replace_deleted hnswlib)
 
-    add_executable(example_mt_filter examples/cpp/example_mt_filter.cpp)
-    target_link_libraries(example_mt_filter hnswlib)
-
-    add_executable(example_mt_replace_deleted examples/cpp/example_mt_replace_deleted.cpp)
-    target_link_libraries(example_mt_replace_deleted hnswlib)
+    add_executable(dump_graph tests/cpp/dump_graph.cpp)
+    target_link_libraries(dump_graph hnswlib ${CNPY_LIB} ${ZLIB_LIB_RELEASE})
 
     # tests
-    add_executable(multivector_search_test tests/cpp/multivector_search_test.cpp)
-    target_link_libraries(multivector_search_test hnswlib)
+    # add_executable(test_updates tests/cpp/updates_test.cpp)
+    # target_link_libraries(test_updates hnswlib)
 
-    add_executable(epsilon_search_test tests/cpp/epsilon_search_test.cpp)
-    target_link_libraries(epsilon_search_test hnswlib)
+    # add_executable(searchKnnCloserFirst_test tests/cpp/searchKnnCloserFirst_test.cpp)
+    # target_link_libraries(searchKnnCloserFirst_test hnswlib)
 
-    add_executable(test_updates tests/cpp/updates_test.cpp)
-    target_link_libraries(test_updates hnswlib)
+    # add_executable(searchKnnWithFilter_test tests/cpp/searchKnnWithFilter_test.cpp)
+    # target_link_libraries(searchKnnWithFilter_test hnswlib)
 
-    add_executable(searchKnnCloserFirst_test tests/cpp/searchKnnCloserFirst_test.cpp)
-    target_link_libraries(searchKnnCloserFirst_test hnswlib)
+    # add_executable(multiThreadLoad_test tests/cpp/multiThreadLoad_test.cpp)
+    # target_link_libraries(multiThreadLoad_test hnswlib)
 
-    add_executable(searchKnnWithFilter_test tests/cpp/searchKnnWithFilter_test.cpp)
-    target_link_libraries(searchKnnWithFilter_test hnswlib)
+    # add_executable(multiThread_replace_test tests/cpp/multiThread_replace_test.cpp)
+    # target_link_libraries(multiThread_replace_test hnswlib)
 
-    add_executable(multiThreadLoad_test tests/cpp/multiThreadLoad_test.cpp)
-    target_link_libraries(multiThreadLoad_test hnswlib)
-
-    add_executable(multiThread_replace_test tests/cpp/multiThread_replace_test.cpp)
-    target_link_libraries(multiThread_replace_test hnswlib)
-
-    add_executable(main tests/cpp/main.cpp tests/cpp/sift_1b.cpp)
-    target_link_libraries(main hnswlib)
+    # add_executable(main tests/cpp/main.cpp tests/cpp/sift_1b.cpp)
+    # target_link_libraries(main hnswlib)
 endif()
