@@ -512,7 +512,6 @@ public:
       return_list.push_back(discarded_candidates.top());
       discarded_candidates.pop();
     }
-
     for (std::pair<dist_t, tableint> curent_pair : return_list) {
       top_candidates.emplace(-curent_pair.first, curent_pair.second);
     }
