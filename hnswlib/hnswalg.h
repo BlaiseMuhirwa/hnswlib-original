@@ -480,6 +480,9 @@ public:
       top_candidates.pop();
     }
 
+    // Queue for the discarded candidates 
+    std::priority_queue<std::pair<dist_t, tableint>> discarded_candidates;
+
     while (queue_closest.size()) {
       if (return_list.size() >= M)
         break;
@@ -500,6 +503,14 @@ public:
       if (good) {
         return_list.push_back(curent_pair);
       }
+      else {
+        discarded_candidates.push(curent_pair);
+      }
+    }
+
+    while (return_list.size() < M && discarded_candidates.size()) {
+      return_list.push_back(discarded_candidates.top());
+      discarded_candidates.pop();
     }
 
     for (std::pair<dist_t, tableint> curent_pair : return_list) {
