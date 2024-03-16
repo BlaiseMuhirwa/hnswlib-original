@@ -66,6 +66,10 @@ public:
   mutable std::atomic<long> metric_distance_computations{0};
   mutable std::atomic<long> metric_hops{0};
 
+  // List of entry point nodes chosen on the base layer graph 
+  // during search. 
+  std::vector<uint32_t> chosen_entry_point_nodes;
+
   bool allow_replace_deleted_ = false; // flag to replace deleted elements
                                        // (marked as deleted) during insertions
 
@@ -1405,6 +1409,10 @@ public:
     return cur_c;
   }
 
+  std::vector<uint32_t> getChosenEntryPointNodes() const {
+    return chosen_entry_point_nodes;
+  }
+
   std::priority_queue<std::pair<dist_t, labeltype>>
   searchKnn(const void *query_data, size_t k,
             BaseFilterFunctor *isIdAllowed = nullptr) const {
@@ -1443,6 +1451,8 @@ public:
         }
       }
     }
+
+    chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
 
     std::priority_queue<std::pair<dist_t, tableint>,
                         std::vector<std::pair<dist_t, tableint>>,

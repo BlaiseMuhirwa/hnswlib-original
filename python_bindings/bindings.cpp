@@ -680,6 +680,10 @@ public:
     }
   }
 
+  std::vector<uint32_t> getEntryPointNodes() {
+    return appr_alg->getChosenEntryPointNodes();
+  }
+
   py::object knnQuery_return_numpy(
       py::object input, size_t k = 1, int num_threads = -1,
       const std::function<bool(hnswlib::labeltype)> &filter = nullptr) {
@@ -964,6 +968,7 @@ PYBIND11_PLUGIN(hnswlib) {
            py::arg("replace_deleted") = false)
       .def("save_base_layer_graph", &Index<float>::saveBaseLayerGraph,
            py::arg("filename"))
+      .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
       .def("get_items", &Index<float>::getData, py::arg("ids") = py::none(),
            py::arg("return_type") = "numpy")
       .def("get_ids_list", &Index<float>::getIdsList)
