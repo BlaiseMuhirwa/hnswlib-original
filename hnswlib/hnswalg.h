@@ -6,6 +6,7 @@
 #include <atomic>
 #include <list>
 #include <memory>
+#include <cstdint>
 #include <random>
 #include <stdlib.h>
 #include <unordered_set>
@@ -68,7 +69,7 @@ public:
 
   // List of entry point nodes chosen on the base layer graph 
   // during search. 
-  std::vector<uint32_t> chosen_entry_point_nodes;
+  mutable std::vector<uint32_t> chosen_entry_point_nodes;
 
   bool allow_replace_deleted_ = false; // flag to replace deleted elements
                                        // (marked as deleted) during insertions
@@ -1409,7 +1410,7 @@ public:
     return cur_c;
   }
 
-  std::vector<uint32_t> getChosenEntryPointNodes() const {
+  std::vector<uint32_t> getChosenEntryPointNodes() {
     return chosen_entry_point_nodes;
   }
 
