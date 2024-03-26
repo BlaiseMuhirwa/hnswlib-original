@@ -1414,6 +1414,13 @@ public:
     return chosen_entry_point_nodes;
   }
 
+  void clearChosenEntryPointNodes() { chosen_entry_point_nodes.clear(); }
+
+  uint64_t getMetricDistanceComputations() {
+    uint64_t distance_computations = static_cast<uint64_t>(metric_distance_computations);
+    return distance_computations;
+  }
+
   std::priority_queue<std::pair<dist_t, labeltype>>
   searchKnn(const void *query_data, size_t k,
             BaseFilterFunctor *isIdAllowed = nullptr) const {
@@ -1461,10 +1468,10 @@ public:
         top_candidates;
     bool bare_bone_search = !num_deleted_ && !isIdAllowed;
     if (bare_bone_search) {
-      top_candidates = searchBaseLayerST<true>(currObj, query_data,
+      top_candidates = searchBaseLayerST<true, true>(currObj, query_data,
                                                std::max(ef_, k), isIdAllowed);
     } else {
-      top_candidates = searchBaseLayerST<false>(currObj, query_data,
+      top_candidates = searchBaseLayerST<false, true>(currObj, query_data,
                                                 std::max(ef_, k), isIdAllowed);
     }
 

@@ -684,6 +684,12 @@ public:
     return appr_alg->getChosenEntryPointNodes();
   }
 
+  void clearEntryPointNodes() { appr_alg->clearChosenEntryPointNodes(); }
+
+  uint64_t getDistanceComputations() {
+    return appr_alg->getMetricDistanceComputations();
+  }
+
   py::object knnQuery_return_numpy(
       py::object input, size_t k = 1, int num_threads = -1,
       const std::function<bool(hnswlib::labeltype)> &filter = nullptr) {
@@ -969,6 +975,8 @@ PYBIND11_PLUGIN(hnswlib) {
       .def("save_base_layer_graph", &Index<float>::saveBaseLayerGraph,
            py::arg("filename"))
       .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
+      .def("clear_chosen_entry_point_nodes", &Index<float>::clearEntryPointNodes)
+      .def("get_distance_computations", &Index<float>::getDistanceComputations)
       .def("get_items", &Index<float>::getData, py::arg("ids") = py::none(),
            py::arg("return_type") = "numpy")
       .def("get_ids_list", &Index<float>::getIdsList)
