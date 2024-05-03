@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <thread>
 #include <tuple>
+#include <utility>
 
 namespace py = pybind11;
 using namespace pybind11::literals; // needed to bring in _a literal
@@ -21,12 +22,11 @@ using namespace pybind11::literals; // needed to bring in _a literal
  *
  * The method is borrowed from nmslib
  */
-template <class Function, typename dist_t, typename... Args>
+template <typename dist_t, class Function>
 inline void ParallelFor(size_t start, size_t end, size_t numThreads,
                         Function fn,
-                        hnswlib::HierarchicalNSW<dist_t> *appr_alg = nullptr,
-                        // std::funtion<void(double)> save_progress_to_s3_bucket = nullptr,
-                        Args... additional_args) {
+                        hnswlib::HierarchicalNSW<dist_t> *appr_alg = nullptr) {
+                        // std::funtion<void(double)> save_progress_to_s3_bucket = nullptr) {
   if (numThreads <= 0) {
     numThreads = std::thread::hardware_concurrency();
   }
@@ -56,9 +56,7 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads,
           }
 
           try {
-            // fn(id, threadId);
-            std::apply(fn, std::tuple_cat(std::make_tuple(id, threadId),
-                                          std::make_tuple(additional_args...)));
+            fn(id, threadId);
           } catch (...) {
             std::unique_lock<std::mutex> lastExcepLock(lastExceptMutex);
             lastException = std::current_exception();
@@ -301,7 +299,7 @@ public:
 
       py::gil_scoped_release l;
       if (normalize == false) {
-        ParallelFor(start, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<dist_t>(start, rows, num_threads, [&](size_t row, size_t threadId) {
           size_t id = ids.size() ? ids.at(row) : (cur_l + row);
           appr_alg->addPoint((void *)items.data(row), (size_t)id,
                              replace_deleted);
@@ -310,7 +308,7 @@ public:
         appr_alg);
       } else {
         std::vector<float> norm_array(num_threads * dim);
-        ParallelFor(start, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<dist_t>(start, rows, num_threads, [&](size_t row, size_t threadId) {
           // normalize vector:
           size_t start_idx = threadId * dim;
           normalize_vector((float *)items.data(row),
@@ -397,8 +395,6 @@ public:
 
     output_file.close();
   }
-
-  void dumpSnapshotToS3Bucket()
 
   py::dict getAnnData() const { /* WARNING: Index::getAnnData is not thread-safe
                                    with Index::addItems */
@@ -749,7 +745,7 @@ public:
       CustomFilterFunctor *p_idFilter = filter ? &idFilter : nullptr;
 
       if (normalize == false) {
-        ParallelFor(0, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
           std::priority_queue<std::pair<dist_t, hnswlib::labeltype>> result =
               appr_alg->searchKnn((void *)items.data(row), k, p_idFilter);
           if (result.size() != k)
@@ -765,7 +761,7 @@ public:
         });
       } else {
         std::vector<float> norm_array(num_threads * features);
-        ParallelFor(0, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
           float *data = (float *)items.data(row);
 
           size_t start_idx = threadId * dim;
@@ -949,7 +945,7 @@ public:
       CustomFilterFunctor idFilter(filter);
       CustomFilterFunctor *p_idFilter = filter ? &idFilter : nullptr;
 
-      ParallelFor(0, rows, num_threads, [&](size_t row, size_t threadId) {
+      ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
         std::priority_queue<std::pair<dist_t, hnswlib::labeltype>> result =
             alg->searchKnn((void *)items.data(row), k, p_idFilter);
         for (int i = k - 1; i >= 0; i--) {
