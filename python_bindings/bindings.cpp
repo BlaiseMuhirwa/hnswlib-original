@@ -9,6 +9,7 @@
 #include <pybind11/stl.h>
 #include <stdlib.h>
 #include <thread>
+#include <tuple>
 
 namespace py = pybind11;
 using namespace pybind11::literals; // needed to bring in _a literal
@@ -20,12 +21,17 @@ using namespace pybind11::literals; // needed to bring in _a literal
  *
  * The method is borrowed from nmslib
  */
-template <class Function>
+template <class Function, typename dist_t, typename... Args>
 inline void ParallelFor(size_t start, size_t end, size_t numThreads,
-                        Function fn) {
+                        Function fn,
+                        hnswlib::HierarchicalNSW<dist_t> *appr_alg = nullptr,
+                        // std::funtion<void(double)> save_progress_to_s3_bucket = nullptr,
+                        Args... additional_args) {
   if (numThreads <= 0) {
     numThreads = std::thread::hardware_concurrency();
   }
+
+  auto total_items = end - start;
 
   if (numThreads == 1) {
     for (size_t id = start; id < end; id++) {
@@ -50,7 +56,9 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads,
           }
 
           try {
-            fn(id, threadId);
+            // fn(id, threadId);
+            std::apply(fn, std::tuple_cat(std::make_tuple(id, threadId),
+                                          std::make_tuple(additional_args...)));
           } catch (...) {
             std::unique_lock<std::mutex> lastExcepLock(lastExceptMutex);
             lastException = std::current_exception();
@@ -62,6 +70,21 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads,
              */
             current = end;
             break;
+          }
+
+          if (appr_alg) {
+            if ((id + 1) % (total_items / 10) == 0) {
+              // Call saveIndex to save Index to current working directory 
+              // Use current time as part of the filename
+              auto now = std::chrono::system_clock::now();
+              auto now_time = std::chrono::system_clock::to_time_t(now);
+              std::string now_str = std::ctime(&now_time);
+              
+              std::string filename = "index_" + now_str + ".hnsw";
+
+              appr_alg->saveIndex(filename);
+              
+            }
           }
         }
       }));
@@ -282,7 +305,9 @@ public:
           size_t id = ids.size() ? ids.at(row) : (cur_l + row);
           appr_alg->addPoint((void *)items.data(row), (size_t)id,
                              replace_deleted);
-        });
+        },
+        // Pass in the appr_alg object so that we can call save method. 
+        appr_alg);
       } else {
         std::vector<float> norm_array(num_threads * dim);
         ParallelFor(start, rows, num_threads, [&](size_t row, size_t threadId) {
@@ -294,7 +319,9 @@ public:
           size_t id = ids.size() ? ids.at(row) : (cur_l + row);
           appr_alg->addPoint((void *)(norm_array.data() + start_idx),
                              (size_t)id, replace_deleted);
-        });
+        },
+        appr_alg  // Pass in the appr_alg object so that we can call save method. 
+        );
       }
       cur_l += rows;
     }
@@ -370,6 +397,8 @@ public:
 
     output_file.close();
   }
+
+  void dumpSnapshotToS3Bucket()
 
   py::dict getAnnData() const { /* WARNING: Index::getAnnData is not thread-safe
                                    with Index::addItems */
