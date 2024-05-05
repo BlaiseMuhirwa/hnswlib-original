@@ -11,6 +11,8 @@
 #include <thread>
 #include <tuple>
 #include <utility>
+#include <algorithm>
+#include <functional>
 
 namespace py = pybind11;
 using namespace pybind11::literals; // needed to bring in _a literal
@@ -77,6 +79,9 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads,
               auto now = std::chrono::system_clock::now();
               auto now_time = std::chrono::system_clock::to_time_t(now);
               std::string now_str = std::ctime(&now_time);
+
+              // Remove spaces from the string
+              now_str.erase(std::remove_if(now_str.begin(), now_str.end(), [](unsigned char x) { return std::isspace(x); }), now_str.end());
               
               std::string filename = "index_" + now_str + ".hnsw";
 
