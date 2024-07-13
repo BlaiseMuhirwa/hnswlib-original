@@ -1421,6 +1421,12 @@ public:
     return distance_computations;
   }
 
+  size_t countNumNeighboringNodes(tableint internalId, int level) {
+    std::unique_lock <std::mutex> lock(link_list_locks_[internalId]);
+    unsigned int *data = get_linklist_at_level(internalId, level);
+    return getListCount(data);
+  }
+
   std::priority_queue<std::pair<dist_t, labeltype>>
   searchKnn(const void *query_data, size_t k,
             BaseFilterFunctor *isIdAllowed = nullptr) const {

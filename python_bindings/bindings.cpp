@@ -213,6 +213,10 @@ public:
       delete appr_alg;
   }
 
+    size_t countNumNeighboringNodes(uint32_t internal_id, uint32_t level) {
+      return appr_alg->countNumNeighboringNodes(internal_id, level);
+    }
+
   void init_new_index(size_t maxElements, size_t M, size_t efConstruction,
                       size_t random_seed, bool allow_replace_deleted) {
     if (appr_alg) {
@@ -1004,6 +1008,7 @@ PYBIND11_PLUGIN(hnswlib) {
            py::arg("replace_deleted") = false)
       .def("save_base_layer_graph", &Index<float>::saveBaseLayerGraph,
            py::arg("filename"))
+      .def("count_num_neighboring_nodes", &Index<float>::countNumNeighboringNodes, py::arg("node_id"), py::arg("level"))
       .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
       .def("clear_chosen_entry_point_nodes", &Index<float>::clearEntryPointNodes)
       .def("get_distance_computations", &Index<float>::getDistanceComputations)
