@@ -1,8 +1,10 @@
 #include "hnswlib.h"
+#include <algorithm>
 #include <assert.h>
 #include <atomic>
-#include <iostream>
 #include <fstream>
+#include <functional>
+#include <iostream>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
@@ -11,8 +13,6 @@
 #include <thread>
 #include <tuple>
 #include <utility>
-#include <algorithm>
-#include <functional>
 
 namespace py = pybind11;
 using namespace pybind11::literals; // needed to bring in _a literal
@@ -28,7 +28,7 @@ template <typename dist_t, class Function>
 inline void ParallelFor(size_t start, size_t end, size_t numThreads,
                         Function fn,
                         hnswlib::HierarchicalNSW<dist_t> *appr_alg = nullptr) {
-                        // std::funtion<void(double)> save_progress_to_s3_bucket = nullptr) {
+  // std::funtion<void(double)> save_progress_to_s3_bucket = nullptr) {
   if (numThreads <= 0) {
     numThreads = std::thread::hardware_concurrency();
   }
@@ -74,19 +74,22 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads,
 
           if (appr_alg) {
             if ((id + 1) % (total_items / 10) == 0) {
-              // Call saveIndex to save Index to current working directory 
+              // Call saveIndex to save Index to current working directory
               // Use current time as part of the filename
               auto now = std::chrono::system_clock::now();
               auto now_time = std::chrono::system_clock::to_time_t(now);
               std::string now_str = std::ctime(&now_time);
 
               // Remove spaces from the string
-              now_str.erase(std::remove_if(now_str.begin(), now_str.end(), [](unsigned char x) { return std::isspace(x); }), now_str.end());
-              
+              now_str.erase(std::remove_if(now_str.begin(), now_str.end(),
+                                           [](unsigned char x) {
+                                             return std::isspace(x);
+                                           }),
+                            now_str.end());
+
               std::string filename = "index_" + now_str + ".hnsw";
 
               appr_alg->saveIndex(filename);
-              
             }
           }
         }
@@ -213,9 +216,9 @@ public:
       delete appr_alg;
   }
 
-    size_t countNumNeighboringNodes(uint32_t internal_id, uint32_t level) {
-      return appr_alg->countNumNeighboringNodes(internal_id, level);
-    }
+  size_t countNumNeighboringNodes(uint32_t internal_id, uint32_t level) {
+    return appr_alg->countNumNeighboringNodes(internal_id, level);
+  }
 
   void init_new_index(size_t maxElements, size_t M, size_t efConstruction,
                       size_t random_seed, bool allow_replace_deleted) {
@@ -308,26 +311,31 @@ public:
 
       py::gil_scoped_release l;
       if (normalize == false) {
-        ParallelFor<dist_t>(start, rows, num_threads, [&](size_t row, size_t threadId) {
-          size_t id = ids.size() ? ids.at(row) : (cur_l + row);
-          appr_alg->addPoint((void *)items.data(row), (size_t)id,
-                             replace_deleted);
-        },
-        // Pass in the appr_alg object so that we can call save method. 
-        appr_alg);
+        ParallelFor<dist_t>(
+            start, rows, num_threads,
+            [&](size_t row, size_t threadId) {
+              size_t id = ids.size() ? ids.at(row) : (cur_l + row);
+              appr_alg->addPoint((void *)items.data(row), (size_t)id,
+                                 replace_deleted);
+            },
+            // Pass in the appr_alg object so that we can call save method.
+            appr_alg);
       } else {
         std::vector<float> norm_array(num_threads * dim);
-        ParallelFor<dist_t>(start, rows, num_threads, [&](size_t row, size_t threadId) {
-          // normalize vector:
-          size_t start_idx = threadId * dim;
-          normalize_vector((float *)items.data(row),
-                           (norm_array.data() + start_idx));
+        ParallelFor<dist_t>(
+            start, rows, num_threads,
+            [&](size_t row, size_t threadId) {
+              // normalize vector:
+              size_t start_idx = threadId * dim;
+              normalize_vector((float *)items.data(row),
+                               (norm_array.data() + start_idx));
 
-          size_t id = ids.size() ? ids.at(row) : (cur_l + row);
-          appr_alg->addPoint((void *)(norm_array.data() + start_idx),
-                             (size_t)id, replace_deleted);
-        },
-        appr_alg  // Pass in the appr_alg object so that we can call save method. 
+              size_t id = ids.size() ? ids.at(row) : (cur_l + row);
+              appr_alg->addPoint((void *)(norm_array.data() + start_idx),
+                                 (size_t)id, replace_deleted);
+            },
+            appr_alg // Pass in the appr_alg object so that we can call save
+                     // method.
         );
       }
       cur_l += rows;
@@ -399,10 +407,18 @@ public:
     for (size_t i = 0; i < appr_alg->cur_element_count; i++) {
       for (size_t j = 0; j < graph[i].size(); j++) {
         output_file << i + 1 << " " << graph[i][j] + 1 << std::endl;
+        if (output_file.fail()) {
+          throw std::runtime_error(
+              "Failed to write graph data to file. Perhaps the disk is full?");
+        }
       }
     }
 
     output_file.close();
+    if (output_file.fail()) {
+      throw std::runtime_error(
+          "Failed to close the file after writing graph data.");
+    }
   }
 
   py::dict getAnnData() const { /* WARNING: Index::getAnnData is not thread-safe
@@ -754,7 +770,8 @@ public:
       CustomFilterFunctor *p_idFilter = filter ? &idFilter : nullptr;
 
       if (normalize == false) {
-        ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<
+            dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
           std::priority_queue<std::pair<dist_t, hnswlib::labeltype>> result =
               appr_alg->searchKnn((void *)items.data(row), k, p_idFilter);
           if (result.size() != k)
@@ -770,7 +787,8 @@ public:
         });
       } else {
         std::vector<float> norm_array(num_threads * features);
-        ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
+        ParallelFor<
+            dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
           float *data = (float *)items.data(row);
 
           size_t start_idx = threadId * dim;
@@ -954,16 +972,17 @@ public:
       CustomFilterFunctor idFilter(filter);
       CustomFilterFunctor *p_idFilter = filter ? &idFilter : nullptr;
 
-      ParallelFor<dist_t>(0, rows, num_threads, [&](size_t row, size_t threadId) {
-        std::priority_queue<std::pair<dist_t, hnswlib::labeltype>> result =
-            alg->searchKnn((void *)items.data(row), k, p_idFilter);
-        for (int i = k - 1; i >= 0; i--) {
-          auto &result_tuple = result.top();
-          data_numpy_d[row * k + i] = result_tuple.first;
-          data_numpy_l[row * k + i] = result_tuple.second;
-          result.pop();
-        }
-      });
+      ParallelFor<dist_t>(
+          0, rows, num_threads, [&](size_t row, size_t threadId) {
+            std::priority_queue<std::pair<dist_t, hnswlib::labeltype>> result =
+                alg->searchKnn((void *)items.data(row), k, p_idFilter);
+            for (int i = k - 1; i >= 0; i--) {
+              auto &result_tuple = result.top();
+              data_numpy_d[row * k + i] = result_tuple.first;
+              data_numpy_l[row * k + i] = result_tuple.second;
+              result.pop();
+            }
+          });
     }
 
     py::capsule free_when_done_l(data_numpy_l, [](void *f) { delete[] f; });
@@ -1008,9 +1027,12 @@ PYBIND11_PLUGIN(hnswlib) {
            py::arg("replace_deleted") = false)
       .def("save_base_layer_graph", &Index<float>::saveBaseLayerGraph,
            py::arg("filename"))
-      .def("count_num_neighboring_nodes", &Index<float>::countNumNeighboringNodes, py::arg("node_id"), py::arg("level"))
+      .def("count_num_neighboring_nodes",
+           &Index<float>::countNumNeighboringNodes, py::arg("node_id"),
+           py::arg("level"))
       .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
-      .def("clear_chosen_entry_point_nodes", &Index<float>::clearEntryPointNodes)
+      .def("clear_chosen_entry_point_nodes",
+           &Index<float>::clearEntryPointNodes)
       .def("get_distance_computations", &Index<float>::getDistanceComputations)
       .def("get_items", &Index<float>::getData, py::arg("ids") = py::none(),
            py::arg("return_type") = "numpy")

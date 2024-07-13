@@ -727,20 +727,6 @@ public:
       size_t num_links = getListCount(data);
       tableint *link_array = (tableint *)(data + 1);
 
-
-      // Pointer to [size, link_0, link_1, ... link_size].
-      // data is int* in the searchBaseLayer and searchBaseLayerST code but I
-      // think it ought to be an unsigned int* due to how the linklistsizeint
-      // typedef is defined. It works on any system where sizeof(int) ==
-      // sizeof(unsigned int) but I still hate it
-      // int *data = (int *)(get_linklist0(node_internal_id));
-      // size_t num_links = getListCount((linklistsizeint *)(data));
-
-      // // std::cout << "Num links: " << num_links << "\n" << std::endl;
-      // // if sizeof(int) != sizeof(unsigned int) then the pointer arithmetic and
-      // // casting in this line will land somewhere in the middle of a variable :(
-      // tableint *link_array = (tableint *)(data + 1);
-
       // 1. Get the external label corresponding to this internal id
       labeltype node_external_label = getExternalLabel(node_internal_id);
 
