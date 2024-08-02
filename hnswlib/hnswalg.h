@@ -1373,6 +1373,9 @@ public:
         if (level > maxlevelcopy || level < 0) // possible?
           throw std::runtime_error("Level error");
 
+        if (level == 0) {
+          chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
+        }
         std::priority_queue<std::pair<dist_t, tableint>,
                             std::vector<std::pair<dist_t, tableint>>,
                             CompareByFirst>
