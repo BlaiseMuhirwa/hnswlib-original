@@ -1382,7 +1382,7 @@ public:
           chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
           // Collect the base layer candidates into the search_base_layer_sequence list
           std::vector<uint32_t> current_sequence;
-          size_t candidates_size = topCandidates.size();
+          size_t candidates_size = top_candidates.size();
           current_sequence.reserve(candidates_size);
           std::priority_queue<std::pair<dist_t, tableint>,
                               std::vector<std::pair<dist_t, tableint>>,
