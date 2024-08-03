@@ -734,6 +734,10 @@ public:
     return appr_alg->getChosenEntryPointNodes();
   }
 
+  std::vector<std::vector<uint32_t>> getSearchBaseLayerSequence() {
+    return appr_alg->getSearchBaseLayerSequence();
+  }
+
   void clearEntryPointNodes() { appr_alg->clearChosenEntryPointNodes(); }
 
   uint64_t getDistanceComputations() {
@@ -1031,6 +1035,8 @@ PYBIND11_PLUGIN(hnswlib) {
            &Index<float>::countNumNeighboringNodes, py::arg("node_id"),
            py::arg("level"))
       .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
+      .def("get_search_base_layer_sequence",
+           &Index<float>::getSearchBaseLayerSequence)
       .def("clear_chosen_entry_point_nodes",
            &Index<float>::clearEntryPointNodes)
       .def("get_distance_computations", &Index<float>::getDistanceComputations)

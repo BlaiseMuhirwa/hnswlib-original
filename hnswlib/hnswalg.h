@@ -70,6 +70,7 @@ public:
   // List of entry point nodes chosen on the base layer graph 
   // during search. 
   mutable std::vector<uint32_t> chosen_entry_point_nodes;
+  mutable std::vector<std::vector<uint32_t>> search_base_layer_sequence;
 
   bool allow_replace_deleted_ = false; // flag to replace deleted elements
                                        // (marked as deleted) during insertions
@@ -1373,13 +1374,29 @@ public:
         if (level > maxlevelcopy || level < 0) // possible?
           throw std::runtime_error("Level error");
 
-        if (level == 0) {
-          chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
-        }
         std::priority_queue<std::pair<dist_t, tableint>,
                             std::vector<std::pair<dist_t, tableint>>,
                             CompareByFirst>
             top_candidates = searchBaseLayer(currObj, data_point, level);
+        if (level == 0) {
+          chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
+          // Collect the base layer candidates into the search_base_layer_sequence list
+          std::vector<uint32_t> current_sequence;
+          size_t candidates_size = topCandidates.size();
+          current_sequence.reserve(candidates_size);
+          std::priority_queue<std::pair<dist_t, tableint>,
+                              std::vector<std::pair<dist_t, tableint>>,
+                              CompareByFirst>
+              top_candidates_copy = top_candidates; 
+          while (top_candidates.size() > 0) {
+            current_sequence.push_back(static_cast<uint32_t>(top_candidates.top().second));
+            top_candidates.pop();
+          }
+
+          search_base_layer_sequence.push_back(current_sequence);
+          top_candidates = top_candidates_copy;
+        }
+
         if (epDeleted) {
           top_candidates.emplace(
               fstdistfunc_(data_point, getDataByInternalId(enterpoint_copy),
@@ -1407,6 +1424,10 @@ public:
 
   std::vector<uint32_t> getChosenEntryPointNodes() {
     return chosen_entry_point_nodes;
+  }
+
+  std::vector<std::vector<uint32_t>> getSearchBaseLayerSequence() {
+    return search_base_layer_sequence;
   }
 
   void clearChosenEntryPointNodes() { chosen_entry_point_nodes.clear(); }
