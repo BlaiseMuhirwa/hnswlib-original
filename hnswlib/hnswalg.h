@@ -1378,24 +1378,24 @@ public:
                             std::vector<std::pair<dist_t, tableint>>,
                             CompareByFirst>
             top_candidates = searchBaseLayer(currObj, data_point, level);
-        if (level == 0) {
-          chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
-          // Collect the base layer candidates into the search_base_layer_sequence list
-          std::vector<uint32_t> current_sequence;
-          size_t candidates_size = top_candidates.size();
-          current_sequence.reserve(candidates_size);
-          std::priority_queue<std::pair<dist_t, tableint>,
-                              std::vector<std::pair<dist_t, tableint>>,
-                              CompareByFirst>
-              top_candidates_copy = top_candidates; 
-          while (top_candidates.size() > 0) {
-            current_sequence.push_back(static_cast<uint32_t>(top_candidates.top().second));
-            top_candidates.pop();
-          }
+        // if (level == 0) {
+        //   chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
+        //   // Collect the base layer candidates into the search_base_layer_sequence list
+        //   std::vector<uint32_t> current_sequence;
+        //   size_t candidates_size = top_candidates.size();
+        //   current_sequence.reserve(candidates_size);
+        //   std::priority_queue<std::pair<dist_t, tableint>,
+        //                       std::vector<std::pair<dist_t, tableint>>,
+        //                       CompareByFirst>
+        //       top_candidates_copy = top_candidates; 
+        //   while (top_candidates.size() > 0) {
+        //     current_sequence.push_back(static_cast<uint32_t>(top_candidates.top().second));
+        //     top_candidates.pop();
+        //   }
 
-          search_base_layer_sequence.push_back(current_sequence);
-          top_candidates = top_candidates_copy;
-        }
+        //   search_base_layer_sequence.push_back(current_sequence);
+        //   top_candidates = top_candidates_copy;
+        // }
 
         if (epDeleted) {
           top_candidates.emplace(
