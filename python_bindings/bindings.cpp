@@ -390,6 +390,10 @@ public:
     return ids;
   }
 
+  std::vector<std::vector<size_t>> getGraph() {
+    return appr_alg->getGraph();
+  }
+
   // Saves the base layer graph in the MatrixMarket format
   void saveBaseLayerGraph(const char *filename) {
     std::ofstream output_file;
@@ -1031,6 +1035,7 @@ PYBIND11_PLUGIN(hnswlib) {
            py::arg("replace_deleted") = false)
       .def("save_base_layer_graph", &Index<float>::saveBaseLayerGraph,
            py::arg("filename"))
+      .def("get_graph", &Index<float>::getGraph)
       .def("count_num_neighboring_nodes",
            &Index<float>::countNumNeighboringNodes, py::arg("node_id"),
            py::arg("level"))
