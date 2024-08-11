@@ -79,7 +79,7 @@ public:
   std::unordered_set<tableint>
       deleted_elements; // contains internal ids of deleted elements
 
-  std::ofstream _log_stream;
+  // std::ofstream _log_stream;
 
   HierarchicalNSW(SpaceInterface<dist_t> *s) {}
 
@@ -95,7 +95,7 @@ public:
                   bool allow_replace_deleted = false)
       : label_op_locks_(MAX_LABEL_OPERATION_LOCKS),
         link_list_locks_(max_elements), element_levels_(max_elements),
-        allow_replace_deleted_(allow_replace_deleted), _log_stream("/root/data/hnsw_logs.txt", std::ios::binary) {
+        allow_replace_deleted_(allow_replace_deleted) {
     max_elements_ = max_elements;
     num_deleted_ = 0;
     data_size_ = s->get_data_size();
@@ -288,9 +288,9 @@ public:
         if (visited_array[candidate_id] == visited_array_tag)
           continue;
 
-        if (layer == 0) {
-          _log_stream << "visiting node: " << candidate_id << "\n";
-        }
+        // if (layer == 0) {
+        //   _log_stream << "visiting node: " << candidate_id << "\n";
+        // }
 
         visited_array[candidate_id] = visited_array_tag;
         char *currObj1 = (getDataByInternalId(candidate_id));
@@ -1381,9 +1381,9 @@ public:
         if (level > maxlevelcopy || level < 0) // possible?
           throw std::runtime_error("Level error");
 
-        if (level == 0) {
-          _log_stream << "Entry Node: " << currObj << "\n";
-        }
+        // if (level == 0) {
+        //   _log_stream << "Entry Node: " << currObj << "\n";
+        // }
 
         std::priority_queue<std::pair<dist_t, tableint>,
                             std::vector<std::pair<dist_t, tableint>>,
