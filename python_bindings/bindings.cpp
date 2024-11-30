@@ -373,6 +373,10 @@ public:
     return appr_alg->getGraph();
   }
 
+  inline const std::unordered_map<hnswlib::labeltype, hnswlib::tableint>& getLabelLookup() const {
+    return appr_alg->getLabelLookup();
+  }
+
   // Saves the base layer graph in the MatrixMarket format
   void saveBaseLayerGraph(const char *filename) {
     std::ofstream output_file;
@@ -1019,6 +1023,7 @@ PYBIND11_PLUGIN(hnswlib) {
            &Index<float>::countNumNeighboringNodes, py::arg("node_id"),
            py::arg("level"))
       .def("get_chosen_entry_point_nodes", &Index<float>::getEntryPointNodes)
+      .def("get_label_lookup", &Index<float>::getLabelLookup)
       .def("get_search_base_layer_sequence",
            &Index<float>::getSearchBaseLayerSequence)
       .def("clear_chosen_entry_point_nodes",

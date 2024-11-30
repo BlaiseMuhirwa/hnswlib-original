@@ -182,6 +182,10 @@ public:
     return label_op_locks_[lock_id];
   }
 
+  inline const std::unordered_map<labeltype, tableint> &getLabelLookup() const {
+    return label_lookup_;
+  }
+
   inline labeltype getExternalLabel(tableint internal_id) const {
     labeltype return_label;
     memcpy(&return_label,
