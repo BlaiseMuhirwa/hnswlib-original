@@ -22,8 +22,7 @@ public:
   static const unsigned char DELETE_MARK = 0x01;
 
   size_t max_elements_{0};
-  mutable std::atomic<size_t> cur_element_count{
-      0}; // current number of elements
+  mutable std::atomic<size_t> cur_element_count{0}; // current number of elements
   size_t size_data_per_element_{0};
   size_t size_links_per_element_{0};
   mutable std::atomic<size_t> num_deleted_{0}; // number of deleted elements
@@ -96,6 +95,9 @@ public:
       : label_op_locks_(MAX_LABEL_OPERATION_LOCKS),
         link_list_locks_(max_elements), element_levels_(max_elements),
         allow_replace_deleted_(allow_replace_deleted) {
+
+
+    std::cout << "Allocating stuff..." << std::flush;
     max_elements_ = max_elements;
     num_deleted_ = 0;
     data_size_ = s->get_data_size();
@@ -120,6 +122,9 @@ public:
     level_generator_.seed(random_seed);
     update_probability_generator_.seed(random_seed + 1);
 
+
+    std::cout << "Allocating Link Lists..." << std::flush;
+
     size_links_level0_ = maxM0_ * sizeof(tableint) + sizeof(linklistsizeint);
     size_data_per_element_ =
         size_links_level0_ + data_size_ + sizeof(labeltype);
@@ -131,6 +136,9 @@ public:
         (char *)malloc(max_elements_ * size_data_per_element_);
     if (data_level0_memory_ == nullptr)
       throw std::runtime_error("Not enough memory");
+
+
+    std::cout << "Allocating Visited Set Pool..." << std::flush;
 
     cur_element_count = 0;
 
@@ -145,6 +153,10 @@ public:
     if (linkLists_ == nullptr)
       throw std::runtime_error(
           "Not enough memory: HierarchicalNSW failed to allocate linklists");
+
+
+    std::cout << "Finished all constructor allocations..." << std::flush;
+
     size_links_per_element_ =
         maxM_ * sizeof(tableint) + sizeof(linklistsizeint);
     mult_ = 1 / log(1.0 * M_);
