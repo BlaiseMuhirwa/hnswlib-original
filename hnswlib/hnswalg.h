@@ -1346,9 +1346,6 @@ public:
     tableint currObj = enterpoint_node_;
     tableint enterpoint_copy = enterpoint_node_;
 
-
-    std::cout << "Mem-setting to 0...\n" << std::flush;
-
     memset(data_level0_memory_ + cur_c * size_data_per_element_ + offsetLevel0_,
            0, size_data_per_element_);
 
