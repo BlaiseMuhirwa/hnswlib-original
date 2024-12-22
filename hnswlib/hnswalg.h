@@ -1403,7 +1403,6 @@ public:
 
         if (level == 0) {
           std::unique_lock<std::mutex> ep_nodes_lock(entry_point_nodes_lock);
-          std::cout << "Pushing an entry point node\n" << std::flush;
           chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
           ep_nodes_lock.unlock();
           // Collect the base layer candidates into the search_base_layer_sequence list
