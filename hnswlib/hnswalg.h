@@ -97,7 +97,6 @@ public:
         allow_replace_deleted_(allow_replace_deleted) {
 
 
-    std::cout << "Allocating stuff...\n" << std::flush;
     max_elements_ = max_elements;
     num_deleted_ = 0;
     data_size_ = s->get_data_size();
@@ -123,7 +122,6 @@ public:
     update_probability_generator_.seed(random_seed + 1);
 
 
-    std::cout << "Allocating Link Lists...\n" << std::flush;
 
     size_links_level0_ = maxM0_ * sizeof(tableint) + sizeof(linklistsizeint);
     size_data_per_element_ =
@@ -137,8 +135,6 @@ public:
     if (data_level0_memory_ == nullptr)
       throw std::runtime_error("Not enough memory");
 
-
-    std::cout << "Allocating Visited Set Pool...\n" << std::flush;
 
     cur_element_count = 0;
 
@@ -154,8 +150,6 @@ public:
       throw std::runtime_error(
           "Not enough memory: HierarchicalNSW failed to allocate linklists");
 
-
-    std::cout << "Finished all constructor allocations...\n" << std::flush;
 
     size_links_per_element_ =
         maxM_ * sizeof(tableint) + sizeof(linklistsizeint);
