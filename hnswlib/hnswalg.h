@@ -308,22 +308,22 @@ public:
 
         dist_t dist1 = fstdistfunc_(data_point, currObj1, dist_func_param_);
         // Check if the current node we're adding to the index is node with ID 6287
-        if (cur_element_count == 6894) {
-          if (candidate_id == 5291) {
-            std::cout << "[hnsw] Found node 5291 in the searchBaseLayer function\n" << std::flush;
-            std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
-            std::cout << "[hnsw] Lower bound: " << lowerBound << "\n" << std::flush;
-            std::cout << "[hnsw] Top candidates size: " << top_candidates.size() << "\n" << std::flush;
-            std::cout << "[hnsw] Ef construction: " << ef_construction_ << "\n" << std::flush;
+        // if (cur_element_count == 6894) {
+        //   if (candidate_id == 5291) {
+        //     std::cout << "[hnsw] Found node 5291 in the searchBaseLayer function\n" << std::flush;
+        //     std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
+        //     std::cout << "[hnsw] Lower bound: " << lowerBound << "\n" << std::flush;
+        //     std::cout << "[hnsw] Top candidates size: " << top_candidates.size() << "\n" << std::flush;
+        //     std::cout << "[hnsw] Ef construction: " << ef_construction_ << "\n" << std::flush;
 
-            // while (!top_candidates.empty()) {
-            //   auto [current_dist, current_id] = top_candidates.top();
-            //   std::cout << "candidate=" << current_id << ", dist=" << current_dist << "\n" << std::flush;
-            //   top_candidates.pop();
-            // }
-            // exit(0);
-          }
-        }
+        //     // while (!top_candidates.empty()) {
+        //     //   auto [current_dist, current_id] = top_candidates.top();
+        //     //   std::cout << "candidate=" << current_id << ", dist=" << current_dist << "\n" << std::flush;
+        //     //   top_candidates.pop();
+        //     // }
+        //     // exit(0);
+        //   }
+        // }
 
         if (top_candidates.size() < ef_construction_ || lowerBound > dist1) {
           candidateSet.emplace(-dist1, candidate_id);
@@ -336,15 +336,15 @@ public:
             top_candidates.emplace(dist1, candidate_id);
 
           if (top_candidates.size() > ef_construction_) {
-            auto [top_dist, top_id] = top_candidates.top();
-            if (cur_element_count == 6894) {
-              if (top_id == 5291) {
-                std::cout << "[hnsw] Popping off node 5291 from the queue\n" << std::flush;
-              }
-              else {
-                std::cout << "[hnsw] Popping off node " << top_id << ". Distance: " << top_dist << "\n" << std::flush;
-              }
-            }
+            // auto [top_dist, top_id] = top_candidates.top();
+            // if (cur_element_count == 6894) {
+            //   if (top_id == 5291) {
+            //     std::cout << "[hnsw] Popping off node 5291 from the queue\n" << std::flush;
+            //   }
+            //   else {
+            //     std::cout << "[hnsw] Popping off node " << top_id << ". Distance: " << top_dist << "\n" << std::flush;
+            //   }
+            // }
             top_candidates.pop();
           }
 
