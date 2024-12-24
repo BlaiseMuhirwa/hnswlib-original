@@ -341,6 +341,9 @@ public:
               if (top_id == 5291) {
                 std::cout << "[hnsw] Popping off node 5291 from the queue\n" << std::flush;
               }
+              else {
+                std::cout << "[hnsw] Popping off node " << top_id << ". Distance: " << top_dist << "\n" << std::flush;
+              }
             }
             top_candidates.pop();
           }
