@@ -308,7 +308,7 @@ public:
 
         dist_t dist1 = fstdistfunc_(data_point, currObj1, dist_func_param_);
         // Check if the current node we're adding to the index is node with ID 6287
-        if (cur_element_count == 6893) {
+        if (cur_element_count == 6894) {
           if (candidate_id == 5291) {
             std::cout << "[hnsw] Found node 5291 in the searchBaseLayer function\n" << std::flush;
             std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
@@ -327,7 +327,7 @@ public:
 
           if (top_candidates.size() > ef_construction_) {
             auto [top_dist, top_id] = top_candidates.top();
-            if (cur_element_count == 6893) {
+            if (cur_element_count == 6894) {
               if (top_id == 5291) {
                 std::cout << "[hnsw] Popping off node 5291 from the queue\n" << std::flush;
               }
