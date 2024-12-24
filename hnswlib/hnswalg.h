@@ -314,13 +314,14 @@ public:
             std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
             std::cout << "[hnsw] Lower bound: " << lowerBound << "\n" << std::flush;
             std::cout << "[hnsw] Top candidates size: " << top_candidates.size() << "\n" << std::flush;
+            std::cout << "[hnsw] Ef construction: " << ef_construction_ << "\n" << std::flush;
 
-            while (!top_candidates.empty()) {
-              auto [current_dist, current_id] = top_candidates.top();
-              std::cout << "candidate=" << current_id << ", dist=" << current_dist << "\n" << std::flush;
-              top_candidates.pop();
-            }
-            exit(0);
+            // while (!top_candidates.empty()) {
+            //   auto [current_dist, current_id] = top_candidates.top();
+            //   std::cout << "candidate=" << current_id << ", dist=" << current_dist << "\n" << std::flush;
+            //   top_candidates.pop();
+            // }
+            // exit(0);
           }
         }
 
