@@ -311,9 +311,7 @@ public:
         if (cur_element_count == 6893) {
           if (candidate_id == 5291) {
             std::cout << "[hnsw] Found node 5291 in the searchBaseLayer function\n" << std::flush;
-            if (!visited_array[candidate_id]) {
-              std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
-            }
+            std::cout << "[hnsw] Distance to node 5291: " << dist1 << "\n" << std::flush;
           }
  
         }
