@@ -1429,10 +1429,10 @@ public:
                             CompareByFirst>
             top_candidates = searchBaseLayer(currObj, data_point, level);
 
-        if (level == 0) {
-          std::unique_lock<std::mutex> ep_nodes_lock(entry_point_nodes_lock);
-          chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
-          ep_nodes_lock.unlock();
+        // if (level == 0) {
+        //   std::unique_lock<std::mutex> ep_nodes_lock(entry_point_nodes_lock);
+        //   chosen_entry_point_nodes.push_back(static_cast<uint32_t>(currObj));
+        //   ep_nodes_lock.unlock();
           // Collect the base layer candidates into the search_base_layer_sequence list
           // std::vector<uint32_t> current_sequence;
           // size_t candidates_size = top_candidates.size();
@@ -1448,7 +1448,7 @@ public:
 
           // search_base_layer_sequence.push_back(current_sequence);
           // top_candidates = top_candidates_copy;
-        }
+        // }
 
         if (epDeleted) {
           top_candidates.emplace(
